@@ -20,6 +20,10 @@ const ScaleControl = dynamic(
     () => import('react-leaflet').then((mod) => mod.ScaleControl),
     { ssr: false }
 );
+const ZoomControl = dynamic(
+    () => import('react-leaflet').then((mod) => mod.ZoomControl),
+    { ssr: false }
+);
 
 const MapEffect = dynamic(
     () => import('../components/MapEffect'),
@@ -517,6 +521,7 @@ export default function Home() {
                         center={[4.2105, 101.9758]} // Center of Malaysia
                         zoom={6}
                         scrollWheelZoom={true}
+                        zoomControl={false}
                         style={{ height: '100%', width: '100%' }}
                     >
                         <TileLayer
@@ -531,7 +536,8 @@ export default function Home() {
                                 onEachFeature={onEachFeature}
                             />
                         )}
-                        <ScaleControl position="bottomright" />
+                        <ScaleControl position="bottomleft" />
+                        <ZoomControl position="bottomright" />
                         <MapEffect selectedFeature={selectedFeature} />
                         {showRainLayer && <RainLayer />}
                     </MapContainer>
