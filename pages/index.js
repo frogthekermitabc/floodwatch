@@ -21,6 +21,15 @@ const ScaleControl = dynamic(
     { ssr: false }
 );
 
+const MapEffect = dynamic(
+    () => import('../components/MapEffect'),
+    { ssr: false }
+);
+const RainLayer = dynamic(
+    () => import('../components/RainLayer'),
+    { ssr: false }
+);
+
 export default function Home() {
     const [districts, setDistricts] = useState(null);
     const [rainfallData, setRainfallData] = useState([]);
@@ -30,8 +39,10 @@ export default function Home() {
 
     // New state for selected district and timeline data
     const [selectedDistrict, setSelectedDistrict] = useState(null);
+    const [selectedFeature, setSelectedFeature] = useState(null);
     const [weatherData, setWeatherData] = useState(null);
     const [loadingWeather, setLoadingWeather] = useState(false);
+    const [showRainLayer, setShowRainLayer] = useState(false);
 
     // Search state
     const [searchQuery, setSearchQuery] = useState('');
@@ -155,6 +166,7 @@ export default function Home() {
     const onDistrictClick = async (feature) => {
         const name = feature.properties.name || feature.properties.district || 'Unknown';
         setSelectedDistrict(name);
+        setSelectedFeature(feature);
         setLoadingWeather(true);
         setWeatherData(null);
 
@@ -250,27 +262,56 @@ export default function Home() {
         setShowSearchResults(false);
         setGeocodeResults([]);
 
-        // Find the district containing this point
-        if (districts && districts.features) {
-            // Simple approach: find closest district by centroid distance
-            let closestDistrict = null;
-            let minDistance = Infinity;
+        setGeocodeResults([]);
 
-            for (const feature of districts.features) {
-                const centroid = getCentroid(feature.geometry.coordinates);
-                const distance = Math.sqrt(
-                    Math.pow(centroid.lat - lat, 2) + Math.pow(centroid.lon - lon, 2)
-                );
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestDistrict = feature;
-                }
-            }
+        const closestDistrict = findClosestDistrict(lat, lon);
+        if (closestDistrict) {
+            onDistrictClick(closestDistrict);
+        }
+    };
 
-            if (closestDistrict) {
-                onDistrictClick(closestDistrict);
+    // Helper to find closest district
+    const findClosestDistrict = (lat, lon) => {
+        if (!districts || !districts.features) return null;
+
+        let closestDistrict = null;
+        let minDistance = Infinity;
+
+        for (const feature of districts.features) {
+            const centroid = getCentroid(feature.geometry.coordinates);
+            const distance = Math.sqrt(
+                Math.pow(centroid.lat - lat, 2) + Math.pow(centroid.lon - lon, 2)
+            );
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestDistrict = feature;
             }
         }
+        return closestDistrict;
+    };
+
+    // Handle Locate Me
+    const handleLocateMe = () => {
+        if (!('geolocation' in navigator)) {
+            alert('Geolocation is not supported by your browser');
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const closest = findClosestDistrict(latitude, longitude);
+                if (closest) {
+                    onDistrictClick(closest);
+                } else {
+                    alert('Could not find a district near you.');
+                }
+            },
+            (error) => {
+                console.error('Error getting location:', error);
+                alert('Unable to retrieve your location');
+            }
+        );
     };
 
 
@@ -318,7 +359,7 @@ export default function Home() {
             </Head>
 
             {/* Top Center Search Bar */}
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-md px-4">
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1001] w-full max-w-md px-4">
                 <div className="relative">
                     <div className="relative">
                         <input
@@ -399,10 +440,10 @@ export default function Home() {
             </div>
 
             {/* Header / Controls */}
-            <div className="absolute top-4 left-4 z-[1000] bg-white p-4 rounded-lg shadow-lg max-w-xs">
-                <h1 className="text-xl font-bold mb-2 text-gray-800">🇲🇾 Flood-Watch</h1>
+            <div className="absolute top-20 md:top-4 left-4 z-[1000] bg-black/80 backdrop-blur-sm p-4 rounded-lg shadow-lg max-w-xs border border-gray-700">
+                <h1 className="text-xl font-bold mb-2 text-white">🇲🇾 Flood-Watch</h1>
 
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2 text-sm text-gray-200">
                     <div className="flex items-center">
                         <span className="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
                         <span>≤ 50mm (Normal)</span>
@@ -417,7 +458,7 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="mt-4 pt-4 border-t border-gray-700 space-y-2">
                     {permission === 'default' && (
                         <button
                             onClick={requestPermission}
@@ -427,13 +468,40 @@ export default function Home() {
                         </button>
                     )}
                     {permission === 'granted' && (
-                        <div className="text-green-600 text-sm flex items-center">
+                        <div className="text-green-400 text-sm flex items-center">
                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                             Alerts Active
                         </div>
                     )}
+
+                    <button
+                        onClick={() => setShowRainLayer(!showRainLayer)}
+                        className={`w-full py-2 px-4 rounded transition-colors text-sm font-medium flex items-center justify-center ${showRainLayer
+                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+                            }`}
+                    >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        {showRainLayer ? 'Hide Radar' : 'Show Radar'}
+                    </button>
+
+
+
+                    <button
+                        onClick={handleLocateMe}
+                        className="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors text-sm font-medium flex items-center justify-center"
+                    >
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Locate Me
+                    </button>
+
                     {lastUpdated && (
                         <p className="text-xs text-gray-400 mt-2">
                             Updated: {lastUpdated.toLocaleTimeString()}
@@ -464,6 +532,8 @@ export default function Home() {
                             />
                         )}
                         <ScaleControl position="bottomright" />
+                        <MapEffect selectedFeature={selectedFeature} />
+                        {showRainLayer && <RainLayer />}
                     </MapContainer>
                 )}
 
@@ -481,13 +551,18 @@ export default function Home() {
             </div>
 
             {/* Timeline Bottom Sheet */}
-            {selectedDistrict && weatherData && (
-                <Timeline
-                    data={weatherData}
-                    districtName={selectedDistrict}
-                    onClose={() => setSelectedDistrict(null)}
-                />
-            )}
-        </div>
+            {
+                selectedDistrict && weatherData && (
+                    <Timeline
+                        data={weatherData}
+                        districtName={selectedDistrict}
+                        onClose={() => {
+                            setSelectedDistrict(null);
+                            setSelectedFeature(null);
+                        }}
+                    />
+                )
+            }
+        </div >
     );
 }
