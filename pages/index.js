@@ -47,6 +47,7 @@ export default function Home() {
     const [weatherData, setWeatherData] = useState(null);
     const [loadingWeather, setLoadingWeather] = useState(false);
     const [showRainLayer, setShowRainLayer] = useState(false);
+    const [visitorCount, setVisitorCount] = useState(0);
 
     // Search state
     const [searchQuery, setSearchQuery] = useState('');
@@ -114,6 +115,15 @@ export default function Home() {
                 (err) => console.error('Geolocation error:', err)
             );
         }
+    }, []);
+
+    // Track visitor and fetch count
+    useEffect(() => {
+        // Register this visit
+        fetch('/api/visitors', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => setVisitorCount(data.count))
+            .catch(err => console.error('Failed to track visitor:', err));
     }, []);
 
     // Helper to find rainfall for a district
@@ -505,6 +515,17 @@ export default function Home() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                 </button>
+            </div>
+
+            {/* Visitor Counter */}
+            <div className="absolute bottom-4 left-20 md:left-4 md:bottom-16 z-[1000] bg-black/80 backdrop-blur-sm px-2 py-1 md:p-3 rounded shadow-lg border border-gray-700">
+                <div className="flex items-center space-x-1 md:space-x-2 text-white text-xs md:text-sm">
+                    <svg className="w-3 h-3 md:w-4 md:h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span className="font-medium">{visitorCount.toLocaleString()}</span>
+                    <span className="text-gray-400">visitors<span className="hidden md:inline"> (24h)</span></span>
+                </div>
             </div>
 
 
