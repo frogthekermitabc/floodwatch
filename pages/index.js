@@ -462,99 +462,97 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-700 space-y-2">
-                    {permission === 'default' && (
-                        <button
-                            onClick={requestPermission}
-                            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm font-medium"
-                        >
-                            Enable Alerts
-                        </button>
-                    )}
-                    {permission === 'granted' && (
-                        <div className="text-green-400 text-sm flex items-center">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                            Alerts Active
-                        </div>
-                    )}
-
-                    <button
-                        onClick={() => setShowRainLayer(!showRainLayer)}
-                        className={`w-full py-2 px-4 rounded transition-colors text-sm font-medium flex items-center justify-center ${showRainLayer
-                            ? 'bg-blue-600 text-white hover:bg-blue-700'
-                            : 'bg-gray-700 text-gray-200 hover:bg-gray-600'
-                            }`}
-                    >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                        {showRainLayer ? 'Hide Radar' : 'Show Radar'}
-                    </button>
-
-
-
-                    <button
-                        onClick={handleLocateMe}
-                        className="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors text-sm font-medium flex items-center justify-center"
-                    >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Locate Me
-                    </button>
-
-                    {lastUpdated && (
-                        <p className="text-xs text-gray-400 mt-2">
-                            Updated: {lastUpdated.toLocaleTimeString()}
-                        </p>
-                    )}
-                </div>
             </div>
+
+
+            {/* FAB Stack */}
+            <div className="absolute bottom-24 right-4 z-[1000] flex flex-col space-y-3 items-end">
+                {/* Alerts FAB */}
+                {permission === 'default' && (
+                    <button
+                        onClick={requestPermission}
+                        className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        title="Enable Alerts"
+                    >
+                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                    </button>
+                )}
+
+                {/* Radar FAB */}
+                <button
+                    onClick={() => setShowRainLayer(!showRainLayer)}
+                    className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 ${showRainLayer
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
+                    title={showRainLayer ? 'Hide Radar' : 'Show Radar'}
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                </button>
+
+                {/* Locate Me FAB */}
+                <button
+                    onClick={handleLocateMe}
+                    className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                    title="Locate Me"
+                >
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+            </div>
+
 
             {/* Map */}
-            <div id="map-container" className="flex-1 relative">
-                {typeof window !== 'undefined' && (
-                    <MapContainer
-                        center={[4.2105, 101.9758]} // Center of Malaysia
-                        zoom={6}
-                        scrollWheelZoom={true}
-                        zoomControl={false}
-                        style={{ height: '100%', width: '100%' }}
-                    >
-                        <TileLayer
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        />
-
-                        {districts && (
-                            <GeoJSON
-                                data={districts}
-                                style={style}
-                                onEachFeature={onEachFeature}
+            < div id="map-container" className="flex-1 relative" >
+                {
+                    typeof window !== 'undefined' && (
+                        <MapContainer
+                            center={[4.2105, 101.9758]} // Center of Malaysia
+                            zoom={6}
+                            scrollWheelZoom={true}
+                            zoomControl={false}
+                            style={{ height: '100%', width: '100%' }}
+                        >
+                            <TileLayer
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
-                        )}
-                        <ScaleControl position="bottomleft" />
-                        <ZoomControl position="bottomright" />
-                        <MapEffect selectedFeature={selectedFeature} />
-                        {showRainLayer && <RainLayer />}
-                    </MapContainer>
-                )}
+
+                            {districts && (
+                                <GeoJSON
+                                    data={districts}
+                                    style={style}
+                                    onEachFeature={onEachFeature}
+                                />
+                            )}
+                            <ScaleControl position="bottomleft" />
+                            <ZoomControl position="bottomright" />
+                            <MapEffect selectedFeature={selectedFeature} />
+                            {showRainLayer && <RainLayer />}
+                        </MapContainer>
+                    )
+                }
 
                 {/* Loading Indicator */}
-                {loadingWeather && (
-                    <div className="absolute inset-0 z-[1500] flex items-center justify-center bg-black bg-opacity-20 pointer-events-none">
-                        <div className="bg-white p-3 rounded-full shadow-lg animate-bounce">
-                            <svg className="w-6 h-6 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
+                {
+                    loadingWeather && (
+                        <div className="absolute inset-0 z-[1500] flex items-center justify-center bg-black bg-opacity-20 pointer-events-none">
+                            <div className="bg-white p-3 rounded-full shadow-lg animate-bounce">
+                                <svg className="w-6 h-6 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )
+                }
+            </div >
 
             {/* Timeline Bottom Sheet */}
             {
