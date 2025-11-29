@@ -1,4 +1,4 @@
-const CACHE_NAME = 'flood-watch-v3';
+const CACHE_NAME = 'flood-watch-v4';
 const STATIC_ASSETS = [
     '/',
     '/manifest.json',
@@ -36,7 +36,6 @@ self.addEventListener('fetch', (event) => {
                     return response;
                 })
                 .catch(() => {
-                    // You could return cached API data here if you wanted to implement that
                     return new Response(JSON.stringify([]), {
                         headers: { 'Content-Type': 'application/json' }
                     });
@@ -45,13 +44,22 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Stale-while-revalidate for other requests (like Next.js pages)
+    // Stale-while-revalidate for other requests
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
             const fetchPromise = fetch(event.request).then((networkResponse) => {
+                // Check if we received a valid response
+                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                    return networkResponse;
+                }
+
+                // Clone the response
+                const responseToCache = networkResponse.clone();
+
                 caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, networkResponse.clone());
+                    cache.put(event.request, responseToCache);
                 });
+
                 return networkResponse;
             });
             return cachedResponse || fetchPromise;
