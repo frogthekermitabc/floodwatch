@@ -1,4 +1,4 @@
-const CACHE_NAME = 'flood-watch-v4';
+const CACHE_NAME = 'flood-watch-v5';
 const STATIC_ASSETS = [
     '/',
     '/manifest.json',

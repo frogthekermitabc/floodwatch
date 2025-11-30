@@ -1,4 +1,3 @@
-```javascript
 // In-memory storage for total visitor count
 let totalVisitors = 0;
 
@@ -17,4 +16,4 @@ export default function handler(req, res) {
     // Method not allowed
     return res.status(405).json({ error: 'Method not allowed' });
 }
-```
+
