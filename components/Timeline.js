@@ -3,10 +3,12 @@ import { useMemo } from 'react';
 export default function Timeline({ data, onClose, districtName }) {
     // Data format expected: { hourly: { time: [], rain: [] }, current: { rain: 0 } }
 
-    // Map WMO codes to icons
-    const getWeatherIcon = (code) => {
-        if (code === 0) return '☀️';
-        if (code >= 1 && code <= 3) return '⛅';
+    // Map WMO codes to icons with Day/Night support
+    const getWeatherIcon = (code, hour) => {
+        const isNight = hour < 7 || hour >= 19;
+
+        if (code === 0) return isNight ? '🌙' : '☀️';
+        if (code >= 1 && code <= 3) return isNight ? '☁️' : '⛅';
         if (code === 45 || code === 48) return '🌫️';
         if (code >= 51 && code <= 67) return '🌧️';
         if (code >= 80 && code <= 82) return '🌧️';
@@ -63,7 +65,7 @@ export default function Timeline({ data, onClose, districtName }) {
                     <div key={idx} className="flex flex-col items-center flex-shrink-0 w-8 group">
                         {/* Weather Icon */}
                         <div className="mb-1 text-xs h-4">
-                            {getWeatherIcon(item.weatherCode)}
+                            {getWeatherIcon(item.weatherCode, item.hour)}
                         </div>
 
                         <div className="relative w-full flex justify-center items-end h-32 bg-gray-50 rounded-b-sm">
