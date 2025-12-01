@@ -3,6 +3,17 @@ import { useMemo } from 'react';
 export default function Timeline({ data, onClose, districtName }) {
     // Data format expected: { hourly: { time: [], rain: [] }, current: { rain: 0 } }
 
+    // Map WMO codes to icons
+    const getWeatherIcon = (code) => {
+        if (code === 0) return '☀️';
+        if (code >= 1 && code <= 3) return '⛅';
+        if (code === 45 || code === 48) return '🌫️';
+        if (code >= 51 && code <= 67) return '🌧️';
+        if (code >= 80 && code <= 82) return '🌧️';
+        if (code >= 95 && code <= 99) return '⛈️';
+        return '';
+    };
+
     const chartData = useMemo(() => {
         if (!data?.hourly) return [];
 
@@ -16,6 +27,7 @@ export default function Timeline({ data, onClose, districtName }) {
                 time: date,
                 hour: date.getHours(),
                 rain: data.hourly.rain[i] || 0,
+                weatherCode: data.hourly.weatherCode ? data.hourly.weatherCode[i] : null,
                 isPast: date < now,
                 isCurrent: date.getHours() === currentHour
             };
@@ -49,10 +61,15 @@ export default function Timeline({ data, onClose, districtName }) {
             <div className="flex items-end space-x-2 h-48 overflow-x-auto pb-2 pt-6">
                 {chartData.map((item, idx) => (
                     <div key={idx} className="flex flex-col items-center flex-shrink-0 w-8 group">
+                        {/* Weather Icon */}
+                        <div className="mb-1 text-xs h-4">
+                            {getWeatherIcon(item.weatherCode)}
+                        </div>
+
                         <div className="relative w-full flex justify-center items-end h-32 bg-gray-50 rounded-b-sm">
                             <div
                                 className={`w-full rounded-t-sm transition-all duration-500 ${item.isCurrent ? 'bg-blue-600 animate-pulse' :
-                                        item.isPast ? 'bg-blue-300' : 'bg-blue-400 opacity-50'
+                                    item.isPast ? 'bg-blue-300' : 'bg-blue-400 opacity-50'
                                     }`}
                                 style={{ height: `${(item.rain / maxRain) * 100}%` }}
                             >

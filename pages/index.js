@@ -189,16 +189,17 @@ export default function Home() {
             const center = getCentroid(feature.geometry.coordinates);
 
             // Fetch Open-Meteo data
-            // Params: latitude, longitude, hourly=rain, past_days=1, forecast_days=1
+            // Params: latitude, longitude, hourly=rain,weather_code, past_days=1, forecast_days=1
             const res = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${center.lat}&longitude=${center.lon}&hourly=rain&past_days=1&forecast_days=2&timezone=auto`
+                `https://api.open-meteo.com/v1/forecast?latitude=${center.lat}&longitude=${center.lon}&hourly=rain,weather_code&past_days=1&forecast_days=2&timezone=auto`
             );
             const data = await res.json();
 
             setWeatherData({
                 hourly: {
                     time: data.hourly.time,
-                    rain: data.hourly.rain
+                    rain: data.hourly.rain,
+                    weatherCode: data.hourly.weather_code
                 }
             });
         } catch (err) {
