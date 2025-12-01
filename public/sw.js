@@ -1,4 +1,4 @@
-const CACHE_NAME = 'flood-watch-v5';
+const CACHE_NAME = 'flood-watch-v6';
 const STATIC_ASSETS = [
     '/',
     '/manifest.json',
@@ -8,10 +8,30 @@ const STATIC_ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
+    // Force new service worker to activate immediately
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(STATIC_ASSETS);
         })
+    );
+});
+
+self.addEventListener('activate', (event) => {
+    // Claim clients immediately so the new SW controls the page
+    event.waitUntil(
+        Promise.all([
+            self.clients.claim(),
+            caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        if (cacheName !== CACHE_NAME) {
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            })
+        ])
     );
 });
 
@@ -67,16 +87,3 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
-        })
-    );
-});
