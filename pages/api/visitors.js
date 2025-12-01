@@ -1,16 +1,16 @@
-// In-memory storage for total visitor count
-let totalVisitors = 0;
+import { kv } from '@vercel/kv';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
     if (req.method === 'POST') {
-        // Increment total count
-        totalVisitors++;
-        return res.status(200).json({ count: totalVisitors });
+        // Increment persistent counter
+        const count = await kv.incr('visitor_count');
+        return res.status(200).json({ count });
     }
 
     if (req.method === 'GET') {
-        // Return current total count
-        return res.status(200).json({ count: totalVisitors });
+        // Get current count (default to 0 if null)
+        const count = await kv.get('visitor_count') || 0;
+        return res.status(200).json({ count });
     }
 
     // Method not allowed
