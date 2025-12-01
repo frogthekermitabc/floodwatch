@@ -1,6 +1,5 @@
-const CACHE_NAME = 'flood-watch-v6';
+const CACHE_NAME = 'flood-watch-v7';
 const STATIC_ASSETS = [
-    '/',
     '/manifest.json',
     '/icon-192.png',
     '/icon-512.png',
@@ -38,7 +37,29 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
-    // Cache-first for GeoJSON and static assets
+    // Network-first for HTML and JavaScript files (always get latest)
+    if (url.pathname.endsWith('.html') || url.pathname.endsWith('.js') || url.pathname === '/') {
+        event.respondWith(
+            fetch(event.request)
+                .then((response) => {
+                    // Cache the new version
+                    if (response && response.status === 200) {
+                        const responseToCache = response.clone();
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(event.request, responseToCache);
+                        });
+                    }
+                    return response;
+                })
+                .catch(() => {
+                    // Fallback to cache if network fails
+                    return caches.match(event.request);
+                })
+        );
+        return;
+    }
+
+    // Cache-first for GeoJSON and static assets (rarely change)
     if (url.pathname.endsWith('.geojson') || STATIC_ASSETS.includes(url.pathname)) {
         event.respondWith(
             caches.match(event.request).then((response) => {
@@ -48,13 +69,10 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Network-first for API calls
+    // Network-first for API calls (always fresh data)
     if (url.pathname.startsWith('/api/')) {
         event.respondWith(
             fetch(event.request)
-                .then((response) => {
-                    return response;
-                })
                 .catch(() => {
                     return new Response(JSON.stringify([]), {
                         headers: { 'Content-Type': 'application/json' }
@@ -64,26 +82,21 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Stale-while-revalidate for other requests
+    // Network-first for everything else
     event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            const fetchPromise = fetch(event.request).then((networkResponse) => {
-                // Check if we received a valid response
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-                    return networkResponse;
+        fetch(event.request)
+            .then((response) => {
+                if (response && response.status === 200) {
+                    const responseToCache = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseToCache);
+                    });
                 }
-
-                // Clone the response
-                const responseToCache = networkResponse.clone();
-
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, responseToCache);
-                });
-
-                return networkResponse;
-            });
-            return cachedResponse || fetchPromise;
-        })
+                return response;
+            })
+            .catch(() => {
+                return caches.match(event.request);
+            })
     );
 });
 
